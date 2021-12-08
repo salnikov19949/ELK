@@ -1,0 +1,20 @@
+FROM ubuntu:18.04
+
+RUN apt-get update && apt-get -y install apt-transport-https curl wget gnupg nano apt-utils nginx default-jre default-jdk
+RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add
+RUN echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" | tee -a /etc/apt/sources.list.d/elastic-7.x.list
+RUN apt-get update && apt-get install elasticsearch=7.7.0
+RUN apt-get install kibana=7.7.0 logstash filebeat
+
+RUN rm ./etc/kibana/kibana.yml 
+COPY ./files_7.7.0/kibana.yml ./etc/kibana/
+
+COPY ./02-beats-input.conf ./etc/logstash/conf.d/
+COPY ./30-elasticsearch-output.conf ./etc/logstash/conf.d/
+COPY ./10-logstash-filter.conf ./etc/logstash/conf.d/
+
+RUN rm ./etc/filebeat/filebeat.yml
+COPY ./files_7.7.0/filebeat.yml ./etc/filebeat/
+
+COPY ./files_7.7.0/start.sh ./
+
